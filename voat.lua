@@ -167,6 +167,10 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     return s
   end
 
+  if string.match(url, "^https?://voat%.co/v/[^/]+/[0-9]+/[0-9]+$") then
+    check(string.match(url, "^(.+)/[0-9]+$"))
+  end
+
   if allowed(url, nil) and status_code == 200
     and not string.match(url, "^https?://cdn%.voat%.co/") then
     html = read_file(file)
@@ -179,7 +183,6 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       parentId = eval_sum(parentId)
       startingIndex = eval_sum(startingIndex)
       local newurl = "/comments/" .. submissionId .. "/" ..parentId .. "/" .. command .. "/" .. startingIndex .. "/" .. sort
-      print('queuing', newurl)
       checknewurl(newurl)
     end
     for submissionID, sort in string.gmatch(html, "javascript:getCommentTree%(([^%),]+),%s*([^%),]+)%)") do
@@ -187,7 +190,6 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       submissionID = eval_sum(submissionID)
       sort = string.match(sort, "^'(.-)'$")
       local newurl = "/comments/" .. submissionID .. "/tree/" .. sort
-      print('queuing', newurl)
       checknewurl(newurl)
     end
     if string.match(html, '<h3 class="panel%-title">Whoops!</h3>') then
