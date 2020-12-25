@@ -44,7 +44,10 @@ end
 allowed = function(url, parenturl)
   if string.match(urlparse.unescape(url), "[<>\\%*%$%^%[%],%(%){}]")
     or string.match(url, "^https?://voat%.co/Account/Login")
-    or string.match(url, "^https?://voat%.coimages/") then
+    or string.match(url, "^https?://voat%.coimages/")
+    or string.match(url, "/v/[^/]+/about$")
+    or string.match(url, "/v/[^/]+/top$")
+    or string.match(url, "/v/[^/]+/new$") then
     return false
   end
 
@@ -65,9 +68,21 @@ allowed = function(url, parenturl)
 
   if not string.match(url, "^https?://[^/]*voat%.co") then
     discovered_external[url] = true
+    return false
+  end
+
+  if item_type == "subverse"
+    and string.match(url, "^https?://voat%.co/v/[^/]+/[0-9]+") then
+    return false
   end
 
   for s in string.gmatch(url, "([0-9]+)") do
+    if ids[s] then
+      return true
+    end
+  end
+
+  for s in string.gmatch(url, "([a-zA-Z0-9%-_]+)") do
     if ids[s] then
       return true
     end
@@ -240,13 +255,20 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   local match = string.match(url["url"], "^https?://voat%.co/comments/([0-9]+)/tree/Top$")
   if match then
     ids[match] = true
+  else
+    match = string.match(url["url"], "^https?://voat%.co/[uv]/([^/%?&]+)")
+    if match then
+      ids[match] = true
+    end
   end
 
   if status_code >= 300 and status_code <= 399 then
     local newloc = urlparse.absolute(url["url"], http_stat["newloc"])
-    if string.match(newloc, "inactive%.min")
+    if (string.match(newloc, "inactive%.min")
       or string.match(newloc, "ReturnUrl")
-      or string.match(newloc, "adultcontent") then
+      or string.match(newloc, "adultcontent"))
+      and not item_type == "subverse"
+      and not item_type == "user" then
       io.stdout:write("Found invalid redirect.\n")
       io.stdout:flush()
       abortgrab = true

@@ -52,7 +52,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20201222.02'
+VERSION = '20201225.01'
 USER_AGENT = 'Archive Team'
 TRACKER_ID = 'voat'
 TRACKER_HOST = 'trackerproxy.archiveteam.org'
@@ -193,6 +193,12 @@ class WgetArgs(object):
         if item_type in ('post', 'thread'):
             wget_args.extend(['--warc-header', 'voat-post: ' + item_value])
             wget_args.append('https://voat.co/comments/{}/tree/Top'.format(item_value))
+        elif item_type == 'user':
+            wget_args.extend(['--warc-header', 'voat-user: ' + item_value])
+            wget_args.append('https://voat.co/u/' + item_value)
+        elif item_type == 'subverse':
+            wget_args.extend(['--warc-header', 'voat-subverse: ' + item_value])
+            wget_args.append('https://voat.co/v/' + item_value)
         else:
             raise ValueError('item_type not supported.')
 
