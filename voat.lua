@@ -252,11 +252,13 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   io.stdout:write(url_count .. "=" .. status_code .. " " .. url["url"] .. "  \n")
   io.stdout:flush()
 
-  local match = string.match(url["url"], "^https?://voat%.co/comments/([0-9]+)/tree/Top$")
-  if match then
-    ids[match] = true
+  if item_type == "post" or item_type == "thread" then
+    local match = string.match(url["url"], "^https?://voat%.co/comments/([0-9]+)/tree/Top$")
+    if match then
+      ids[match] = true
+    end
   else
-    match = string.match(url["url"], "^https?://voat%.co/[uv]/([^/%?&]+)")
+    local match = string.match(url["url"], "^https?://voat%.co/[uv]/([^/%?&]+)")
     if match then
       ids[match] = true
     end
